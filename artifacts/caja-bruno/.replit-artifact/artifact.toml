@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "Caja Peluquería Bruno"
+description = "Aplicación móvil de caja para una peluquería canina: registra ventas, salidas, anulaciones, cierres y administra servicios con persistencia local."
+version = "1.0.0"
+id = "artifacts/caja-bruno"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 25315
+
+[services.development]
+run = "pnpm --filter @workspace/caja-bruno run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/caja-bruno", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/caja-bruno/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "25315"
+BASE_PATH = "/"

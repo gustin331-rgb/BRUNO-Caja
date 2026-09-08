@@ -1,6 +1,6 @@
-# [Project name]
+# Caja Peluquería Bruno
 
-_Replace the heading above with the project's name, and this line with one sentence describing what this app does for users._
+Caja móvil para registrar ventas, salidas y cierres de una peluquería canina.
 
 ## Run & Operate
 
@@ -22,15 +22,20 @@ _Replace the heading above with the project's name, and this line with one sente
 
 ## Where things live
 
-_Populate as you build — short repo map plus pointers to the source-of-truth file for DB schema, API contracts, theme files, etc._
+- `artifacts/caja-bruno/src/App.tsx` — aplicación, rutas, caja, ventas, historial y configuración.
+- `artifacts/caja-bruno/src/index.css` — tema visual móvil inspirado en la referencia de Bruno.
+- `artifacts/caja-bruno/public/bruno-mascot.png` — ilustración usada en la tarjeta de caja.
+- La persistencia de esta primera versión usa `localStorage` del dispositivo.
 
 ## Architecture decisions
 
-_Populate as you build — non-obvious choices a reader couldn't infer from the code (3-5 bullets)._
+- La caja activa se calcula a partir de `activeOpenedAt`; cerrar caja crea un cierre inmutable y abre un período nuevo.
+- Las ventas anuladas permanecen en el historial y dejan de computar en el saldo efectivo.
+- Los servicios y todas las operaciones se guardan localmente para que la app funcione sin depender de una conexión.
 
 ## Product
 
-_Describe the high-level user-facing capabilities of this app once they exist._
+La app permite gestionar servicios activos, registrar ventas con cantidad, registrar salidas de caja, consultar y anular ventas, y cerrar períodos con resumen de ventas, salidas y neto.
 
 ## User preferences
 
@@ -38,7 +43,8 @@ _Populate as you build — explicit user instructions worth remembering across s
 
 ## Gotchas
 
-_Populate as you build — sharp edges, "always run X before Y" rules._
+- Las cantidades y precios se manejan como pesos argentinos enteros sin centavos en esta interfaz.
+- Para comprobar el build manualmente fuera del workflow hay que definir `PORT` y `BASE_PATH`; el workflow los inyecta automáticamente.
 
 ## Pointers
 

@@ -27,6 +27,7 @@ import {
   Settings,
   Sparkles,
   Star,
+  ShoppingCart,
   Trash2,
   Truck,
   X,
@@ -79,6 +80,10 @@ type CashClosure = {
   netTotal: number;
   salesCount: number;
   withdrawalsCount: number;
+};
+type CartItem = {
+  service: Service;
+  quantity: number;
 };
 type Store = {
   services: Service[];
@@ -190,8 +195,8 @@ function cashTotals(operations: Operation[], openedAt: string) {
 function App() {
   const [store, setStore] = useState<Store>(readStore);
   const [now, setNow] = useState(new Date());
-  const [sheet, setSheet] = useState<'menu' | 'sale' | 'withdrawal' | 'close' | 'service' | null>(null);
-  const [selectedService, setSelectedService] = useState<Service | null>(null);
+  const [sheet, setSheet] = useState<'menu' | 'withdrawal' | 'close' | 'service' | null>(null);
+  const [cart, setCart] = useState<CartItem[]>([]);
   const [editingService, setEditingService] = useState<Service | null>(null);
   const [notice, setNotice] = useState('');
 
@@ -213,9 +218,25 @@ function App() {
   const totals = useMemo(() => cashTotals(store.operations, store.activeOpenedAt), [store.operations, store.activeOpenedAt]);
   const activeServices = store.services.filter((service) => service.active);
 
-  const addSale = (service: Service, quantity: number) => {
+  const addToCart = (service: Service) => {
+    setCart((current) => {
+      const existing = current.find((item) => item.service.id === service.id);
+      if (existing) {
+        return current.map((item) => item.service.id === service.id ? { ...item, quantity: item.quantity + 1 } : item);
+      }
+      return [...current, { service, quantity: 1 }];
+    });
+    setNotice(`${service.name} agregado al carrito`);
+  };
+
+  const removeFromCart = (serviceId: string) => {
+    setCart((current) => current.filter((item) => item.service.id !== serviceId));
+  };
+
+  const completeCartSale = () => {
+    if (!cart.length) return;
     const occurredAt = new Date().toISOString();
-    const sale: Sale = {
+    const sales: Sale[] = cart.map(({ service, quantity }) => ({
       id: makeId('sale'),
       kind: 'sale',
       serviceId: service.id,
@@ -225,11 +246,10 @@ function App() {
       total: service.price * quantity,
       occurredAt,
       status: 'VENTA',
-    };
-    setStore((current) => ({ ...current, operations: [sale, ...current.operations] }));
-    setSheet(null);
-    setSelectedService(null);
-    setNotice(`${service.name} registrado en la caja`);
+    }));
+    setStore((current) => ({ ...current, operations: [...sales, ...current.operations] }));
+    setCart([]);
+    setNotice(sales.length === 1 ? `${sales[0].serviceName} registrado en la caja` : `${sales.length} servicios registrados en la caja`);
   };
 
   const addWithdrawal = (reason: string, amount: number) => {
@@ -316,7 +336,7 @@ function App() {
         <TooltipProvider>
           <Switch>
             <Route path="/">
-              <HomePage now={now} totals={totals} services={activeServices} onService={(service) => { setSelectedService(service); setSheet('sale'); }} onWithdrawal={() => setSheet('withdrawal')} onClose={() => setSheet('close')} onMenu={() => setSheet('menu')} />
+              <HomePage now={now} totals={totals} services={activeServices} cart={cart} onService={addToCart} onRemoveFromCart={removeFromCart} onCompleteSale={completeCartSale} onWithdrawal={() => setSheet('withdrawal')} onClose={() => setSheet('close')} onMenu={() => setSheet('menu')} />
             </Route>
             <Route path="/registro">
               <HistoryPage operations={store.operations} onMenu={() => setSheet('menu')} onAnnul={annulSale} />
@@ -329,7 +349,6 @@ function App() {
             </Route>
           </Switch>
           {sheet === 'menu' && <MenuSheet onClose={() => setSheet(null)} onClear={clearData} onCloseCash={() => setSheet('close')} closures={store.closures} />}
-          {sheet === 'sale' && selectedService && <SaleSheet service={selectedService} onClose={() => { setSheet(null); setSelectedService(null); }} onConfirm={addSale} />}
           {sheet === 'withdrawal' && <WithdrawalSheet onClose={() => setSheet(null)} onConfirm={addWithdrawal} />}
           {sheet === 'close' && <CloseSheet totals={totals} onClose={() => setSheet(null)} onConfirm={closeCash} />}
           {sheet === 'service' && <ServiceSheet service={editingService} onClose={() => { setSheet(null); setEditingService(null); }} onConfirm={saveService} />}
@@ -357,7 +376,7 @@ function AppHeader({ now, onMenu, back }: { now?: Date; onMenu: () => void; back
   );
 }
 
-function HomePage({ now, totals, services, onService, onWithdrawal, onClose, onMenu }: { now: Date; totals: ReturnType<typeof cashTotals>; services: Service[]; onService: (service: Service) => void; onWithdrawal: () => void; onClose: () => void; onMenu: () => void }) {
+function HomePage({ now, totals, services, cart, onService, onRemoveFromCart, onCompleteSale, onWithdrawal, onClose, onMenu }: { now: Date; totals: ReturnType<typeof cashTotals>; services: Service[]; cart: CartItem[]; onService: (service: Service) => void; onRemoveFromCart: (serviceId: string) => void; onCompleteSale: () => void; onWithdrawal: () => void; onClose: () => void; onMenu: () => void }) {
   return (
     <main className="app-shell">
       <WorldDecor />
@@ -395,7 +414,7 @@ function HomePage({ now, totals, services, onService, onWithdrawal, onClose, onM
             <ArrowRight className="expense-arrow" size={25} strokeWidth={2.7} />
           </button>
         </section>
-        <div className="hint-bar"><CalendarDays size={17} strokeWidth={2.5} /><span>Todo queda guardado automáticamente · Tocá + para vender</span></div>
+         <CartPanel cart={cart} onRemove={onRemoveFromCart} onComplete={onCompleteSale} />
         <button className="close-register" onClick={onClose}><LockKeyhole size={17} /> CERRAR CAJA</button>
         <div className="bottom-doodles" aria-hidden="true"><PawPrint size={19} /><span>•</span><Dog size={22} /><span>•</span><PawPrint size={19} /></div>
       </div>
@@ -412,6 +431,38 @@ function ServiceCard({ service, onSelect }: { service: Service; onSelect: (servi
       <div className="service-price">{formatMoney(service.price)}</div>
       <button className="service-add" onClick={() => onSelect(service)} aria-label={`Agregar ${service.name}`}><Plus size={25} strokeWidth={3} /></button>
     </article>
+  );
+}
+
+function CartPanel({ cart, onRemove, onComplete }: { cart: CartItem[]; onRemove: (serviceId: string) => void; onComplete: () => void }) {
+  const itemCount = cart.reduce((sum, item) => sum + item.quantity, 0);
+  const total = cart.reduce((sum, item) => sum + item.service.price * item.quantity, 0);
+
+  return (
+    <section className={`cart-panel ${cart.length ? 'cart-filled' : 'cart-empty'}`} aria-labelledby="cart-title">
+      <div className="cart-panel-head">
+        <div>
+          <div className="cart-kicker"><ShoppingCart size={17} strokeWidth={2.6} /> <span id="cart-title">Carrito de venta</span></div>
+          <strong>{cart.length ? `${itemCount} ${itemCount === 1 ? 'servicio' : 'servicios'} listos` : 'Todavía no agregaste servicios'}</strong>
+        </div>
+        {cart.length > 0 && <div className="cart-total">{formatMoney(total)}</div>}
+      </div>
+      {cart.length > 0 ? (
+        <div className="cart-lines">
+          {cart.map(({ service, quantity }) => (
+            <div className="cart-line" key={service.id}>
+              <span className="cart-line-icon">{iconForService(service.icon, 17)}</span>
+              <span className="cart-line-name">{service.name}</span>
+              <span className="cart-line-quantity">x{quantity}</span>
+              <button className="cart-line-remove" onClick={() => onRemove(service.id)} aria-label={`Quitar ${service.name} del carrito`}><X size={15} strokeWidth={3} /></button>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <p className="cart-empty-copy">Tocá el botón + de un servicio para sumarlo a la próxima venta.</p>
+      )}
+      <button className="action-button cart-submit" disabled={!cart.length} onClick={onComplete}><Check size={19} strokeWidth={3} /> REALIZAR VENTA</button>
+    </section>
   );
 }
 

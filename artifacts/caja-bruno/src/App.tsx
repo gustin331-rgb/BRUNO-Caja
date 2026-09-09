@@ -15,9 +15,7 @@ import {
   Dog,
   Edit3,
   FileText,
-  Flower2,
   History,
-  Heart,
   Leaf,
   LockKeyhole,
   Menu,
@@ -160,9 +158,9 @@ function iconForService(icon: ServiceIconName, size = 32) {
 function WorldDecor({ variant = 'home' }: { variant?: 'home' | 'page' }) {
   return (
     <div className={`world-decor world-${variant}`} aria-hidden="true">
-      <span className="world-vine vine-left"><Flower2 size={23} strokeWidth={2.2} /></span>
+      <span className="world-vine vine-left"><Scissors size={22} strokeWidth={2.2} /></span>
       <span className="world-collectible collectible-star"><Star size={18} fill="currentColor" strokeWidth={2.5} /></span>
-      <span className="world-collectible collectible-heart"><Heart size={17} fill="currentColor" strokeWidth={2.5} /></span>
+      <span className="world-collectible collectible-brush"><Scissors size={17} strokeWidth={2.5} /></span>
       <span className="world-collectible collectible-bone"><Bone size={19} fill="currentColor" strokeWidth={2.2} /></span>
       <span className="world-vine vine-right"><Leaf size={22} strokeWidth={2.2} /></span>
     </div>
@@ -347,10 +345,10 @@ function AppHeader({ now, onMenu, back }: { now?: Date; onMenu: () => void; back
   return (
     <header className="topbar">
       <div className="brand-lockup">
-        {back ? <Link href="/" className="round-icon inline-icon" aria-label="Volver al inicio"><ArrowLeft size={21} /></Link> : <div className="brand-mark" aria-hidden="true"><PawPrint size={26} strokeWidth={2.5} /></div>}
+        {back ? <Link href="/" className="round-icon inline-icon" aria-label="Volver al inicio"><ArrowLeft size={21} /></Link> : <img className="brand-mark" src={`${import.meta.env.BASE_URL}bruno-brand.jpeg`} alt="Estética Canina Bruno" />}
         <div>
-          <div className="brand-name">Bruno</div>
-          <div className="brand-sub">Peluquería Canina</div>
+          <div className="brand-name">{back ? 'Bruno' : 'Peluquería Canina'}</div>
+          <div className="brand-sub">{back ? 'Peluquería Canina' : 'BRUNO · Estética Canina'}</div>
           {now && <div className="date-strip">{formatDateTime(now)}</div>}
         </div>
       </div>

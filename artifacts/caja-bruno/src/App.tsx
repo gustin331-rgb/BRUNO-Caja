@@ -7,6 +7,7 @@ import {
   ArrowLeft,
   ArrowRight,
   Bath,
+  Bone,
   CalendarDays,
   Check,
   ChevronRight,
@@ -14,7 +15,10 @@ import {
   Dog,
   Edit3,
   FileText,
+  Flower2,
   History,
+  Heart,
+  Leaf,
   LockKeyhole,
   Menu,
   PawPrint,
@@ -24,6 +28,7 @@ import {
   Scissors,
   Settings,
   Sparkles,
+  Star,
   Trash2,
   Truck,
   X,
@@ -150,6 +155,18 @@ function iconForService(icon: ServiceIconName, size = 32) {
   if (icon === 'transport') return <Truck {...props} />;
   if (icon === 'sparkle') return <Sparkles {...props} />;
   return <Dog {...props} />;
+}
+
+function WorldDecor({ variant = 'home' }: { variant?: 'home' | 'page' }) {
+  return (
+    <div className={`world-decor world-${variant}`} aria-hidden="true">
+      <span className="world-vine vine-left"><Flower2 size={23} strokeWidth={2.2} /></span>
+      <span className="world-collectible collectible-star"><Star size={18} fill="currentColor" strokeWidth={2.5} /></span>
+      <span className="world-collectible collectible-heart"><Heart size={17} fill="currentColor" strokeWidth={2.5} /></span>
+      <span className="world-collectible collectible-bone"><Bone size={19} fill="currentColor" strokeWidth={2.2} /></span>
+      <span className="world-vine vine-right"><Leaf size={22} strokeWidth={2.2} /></span>
+    </div>
+  );
 }
 
 function operationIsCurrent(operation: Operation, openedAt: string) {
@@ -345,9 +362,11 @@ function AppHeader({ now, onMenu, back }: { now?: Date; onMenu: () => void; back
 function HomePage({ now, totals, services, onService, onWithdrawal, onClose, onMenu }: { now: Date; totals: ReturnType<typeof cashTotals>; services: Service[]; onService: (service: Service) => void; onWithdrawal: () => void; onClose: () => void; onMenu: () => void }) {
   return (
     <main className="app-shell">
+      <WorldDecor />
       <div className="screen-pad">
         <AppHeader now={now} onMenu={onMenu} />
         <section className="hero-card">
+          <div className="hero-sticker"><Star size={13} fill="currentColor" /><span>día feliz</span></div>
           <div className="hero-copy">
             <div className="hero-kicker">Caja del día</div>
             <div className="hero-total">{formatMoney(totals.netTotal)}</div>
@@ -399,7 +418,7 @@ function ServiceCard({ service, onSelect }: { service: Service; onSelect: (servi
 }
 
 function PageFrame({ title, subtitle, now, onMenu, children }: { title: string; subtitle: string; now?: Date; onMenu: () => void; children: ReactNode }) {
-  return <main className="app-shell"><div className="screen-pad"><AppHeader now={now} onMenu={onMenu} back="/" /><div className="page-heading"><div className="heading-row"><PawPrint className="heading-paw" size={18} fill="currentColor" /><span className="micro-label" style={{ color: '#e66986' }}>{title}</span></div><h1>{subtitle}</h1></div>{children}</div></main>;
+  return <main className="app-shell"><WorldDecor variant="page" /><div className="screen-pad"><AppHeader now={now} onMenu={onMenu} back="/" /><div className="page-heading"><div className="heading-row"><PawPrint className="heading-paw" size={18} fill="currentColor" /><span className="micro-label" style={{ color: '#e66986' }}>{title}</span></div><h1>{subtitle}</h1></div>{children}</div></main>;
 }
 
 function HistoryPage({ operations, onMenu, onAnnul }: { operations: Operation[]; onMenu: () => void; onAnnul: (id: string) => void }) {

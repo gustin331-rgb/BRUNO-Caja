@@ -1,0 +1,8 @@
+[{
+  "relation": ["delegate_permission/common.handle_all_urls"],
+  "target": {
+    "namespace": "android_app",
+    "package_name": "app.replit.caja_peluqueria_bruno__gustin331.twa",
+    "sha256_cert_fingerprints": ["3E:44:F0:7C:6B:03:44:D5:D6:83:F5:CA:90:35:12:B8:9F:98:89:60:63:4D:ED:42:BF:A9:24:42:7D:FE:37:80"]
+  }
+}]

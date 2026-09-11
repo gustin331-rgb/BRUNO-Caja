@@ -12,6 +12,9 @@ jobs:
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
+    env:
+      PORT: 5173
+      BASE_PATH: /BRUNO-Caja/
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -25,6 +28,6 @@ jobs:
       - run: pnpm --filter "./artifacts/caja-bruno" build
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: artifacts/caja-bruno/dist
+          path: artifacts/caja-bruno/dist/public
       - id: deployment
         uses: actions/deploy-pages@v4
